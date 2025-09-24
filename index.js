@@ -5,16 +5,16 @@ import cors from "cors";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Apps Script URL
-const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbzA6XnGuFX_ryiT3bt313wj_n2aPrDrS2jx59_dO1G_Df9eK7-tDxe3j-F-jczv_HdOgA/exec";
+// Replace with your Apps Script /exec URL
+const SHEET_ENDPOINT_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbxQcaASRCsxcG9KGZpz_OgvRQNUQc9tbl3OBiViSPgvyl8YUgDILq5Y8k7K7Kx0rHZW3w/exec";
 
 app.use(cors());
 app.use(express.json());
 
-// Upload
+// POST /upload → forward to Apps Script
 app.post("/upload", async (req, res) => {
   try {
-    const response = await fetch(SHEET_ENDPOINT, {
+    const response = await fetch(SHEET_ENDPOINT_APPS_SCRIPT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(req.body)
@@ -26,11 +26,11 @@ app.post("/upload", async (req, res) => {
   }
 });
 
-// Fetch
+// GET /fetch/:sheet → fetch from Apps Script
 app.get("/fetch/:sheet", async (req, res) => {
   const sheet = req.params.sheet;
   try {
-    const response = await fetch(`${SHEET_ENDPOINT}?sheet=${sheet}`);
+    const response = await fetch(`${SHEET_ENDPOINT_APPS_SCRIPT}?sheet=${sheet}`);
     const data = await response.json();
     res.json(data);
   } catch (err) {
@@ -38,9 +38,7 @@ app.get("/fetch/:sheet", async (req, res) => {
   }
 });
 
-// Status
-app.get("/", (req, res) => {
-  res.send("SlopeLedger Relay Server running. Use POST /upload and GET /fetch/:sheet");
-});
+// Optional status
+app.get("/", (req, res) => res.send("SlopeLedger Relay Server running"));
 
 app.listen(PORT, () => console.log(`Relay server running on port ${PORT}`));
