@@ -2,7 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>SlopeLedger</title>
+<title>Bookkeeping</title>
+<link rel="icon" href="logo.png" />
+
+<!-- PWA meta tags -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#2563EB" />
+<link rel="manifest" href="manifest.json" />
+
+<!-- React, Babel, Tailwind -->
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -11,11 +19,14 @@
 <body class="bg-gray-100 min-h-screen flex justify-center p-6">
 <div id="root" class="w-full max-w-4xl"></div>
 
+<!-- Install button for PWA -->
+<button id="installBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg mb-3" style="display:none;">Install Bookkeeping</button>
+
 <script type="text/babel">
 const { useState } = React;
 
 function App() {
-  const SHEET_ENDPOINT = "https://work-ftdl.onrender.com"; // Render relay
+  const SHEET_ENDPOINT = "https://work-ftdl.onrender.com"; // Render relay URL
 
   const [activeTab,setActiveTab] = useState("income");
   const [status,setStatus] = useState("");
@@ -83,6 +94,7 @@ function App() {
       </div>
 
       <div className="mt-4">
+        {/* Income Tab */}
         {activeTab==="income" && (
           <div>
             <input className="border p-2 rounded w-full mb-3" placeholder="Source of income" value={income.source} onChange={e=>setIncome({...income, source:e.target.value})}/>
@@ -91,6 +103,7 @@ function App() {
           </div>
         )}
 
+        {/* Work Tab */}
         {activeTab==="work" && (
           <div>
             <input className="border p-2 rounded w-full mb-3" placeholder="Workplace" value={work.workplace} onChange={e=>setWork({...work, workplace:e.target.value})}/>
@@ -100,6 +113,7 @@ function App() {
           </div>
         )}
 
+        {/* Expenses Tab */}
         {activeTab==="expenses" && (
           <div>
             <input className="border p-2 rounded w-full mb-3" placeholder="Category" value={expense.category} onChange={e=>setExpense({...expense, category:e.target.value})}/>
@@ -109,6 +123,7 @@ function App() {
           </div>
         )}
 
+        {/* Fetch data */}
         <div className="mt-6">
           <button onClick={()=>fetchData(activeTab.charAt(0).toUpperCase()+activeTab.slice(1))} className="bg-green-600 text-white px-4 py-2 rounded-lg mb-3">View {activeTab}</button>
           {fetchedData.length>0 && (
@@ -128,6 +143,31 @@ function App() {
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+
+<!-- Service Worker registration -->
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('service-worker.js')
+      .then(reg=>console.log('SW registered:', reg.scope))
+      .catch(err=>console.log('SW registration failed:', err));
+  });
+}
+
+// PWA install prompt
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'inline-block';
+});
+installBtn.addEventListener('click', async ()=>{
+  installBtn.style.display='none';
+  deferredPrompt.prompt();
+  deferredPrompt = null;
+});
 </script>
 </body>
 </html>
