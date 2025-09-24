@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Replace this with your deployed Google Apps Script /exec URL
-const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbxFF-GhrKzPZZwGQNLOsWrf-adxML0M5Cj_-Pp6Q4giY9V5hsZt3ULXkI6t3LjipNmihg/exec";
+const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbzgxkJgGSOB44HZbPHVQIQVAe-IsOANxwYvPeWen56nPQufhQyY8hAM-8StAlXh8yIb2g/exec";
 
 // Middleware
 app.use(cors());
