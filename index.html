@@ -15,7 +15,7 @@
     const { useState } = React;
 
     function App() {
-      // Replace with your Render relay URL
+      // This should point to your Render relay URL
       const SHEET_ENDPOINT = "https://work-ftdl.onrender.com";
 
       const [activeTab, setActiveTab] = useState("income");
@@ -26,7 +26,6 @@
       const [work, setWork] = useState({ workplace: "", hours: "", rate: "" });
       const [expense, setExpense] = useState({ category: "", amount: "", note: "" });
 
-      // Upload function
       async function upload(type, data) {
         setStatus("Uploading...");
         try {
@@ -44,7 +43,6 @@
         }
       }
 
-      // Fetch function
       async function fetchData(sheet) {
         setStatus("Fetching data...");
         try {
@@ -77,7 +75,6 @@
 
       return (
         <div className="bg-white rounded-xl shadow-lg w-full p-6">
-          {/* Tabs */}
           <div className="flex border-b">
             <TabButton label="Income" id="income" />
             <TabButton label="Work" id="work" />
@@ -90,7 +87,7 @@
                 <h2 className="text-xl font-bold mb-4">Log Income</h2>
                 <input
                   className="border p-2 rounded w-full mb-3"
-                  placeholder="Source (e.g. Lessons)"
+                  placeholder="Source"
                   value={income.source}
                   onChange={e => setIncome({...income, source: e.target.value})}
                 />
@@ -147,7 +144,7 @@
                 <h2 className="text-xl font-bold mb-4">Log Expense</h2>
                 <input
                   className="border p-2 rounded w-full mb-3"
-                  placeholder="Category (e.g. Travel)"
+                  placeholder="Category"
                   value={expense.category}
                   onChange={e => setExpense({...expense, category: e.target.value})}
                 />
@@ -206,7 +203,6 @@
               )}
             </div>
 
-            {/* Status */}
             <div className="mt-4 text-gray-600">{status}</div>
           </div>
         </div>
