@@ -196,8 +196,3 @@ https://yourusername.github.io/bookkeeping
 - The PWA works offline for the app shell, but internet is required to upload/fetch data.  
 - Customize the app by editing React components in `index.html`.
 
----
-
-## 🔹 License
-
-MIT License © 2025 Your Name
