@@ -15,44 +15,39 @@
     const { useState } = React;
 
     function App() {
-      // Replace with your deployed Render relay URL
+      // Replace with your Render relay URL
       const SHEET_ENDPOINT = "https://work-ftdl.onrender.com";
+      const PASSWORD = "Welcome200827"; // same as your relay server
 
       const [activeTab, setActiveTab] = useState("income");
       const [status, setStatus] = useState("");
       const [fetchedData, setFetchedData] = useState([]);
 
-      // Form states
       const [income, setIncome] = useState({ source: "", amount: "" });
       const [work, setWork] = useState({ workplace: "", hours: "", rate: "" });
       const [expense, setExpense] = useState({ category: "", amount: "", note: "" });
 
-      // Upload function
       async function upload(type, data) {
         setStatus("Uploading...");
         try {
           const res = await fetch(`${SHEET_ENDPOINT}/upload`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ type, ...data })
+            body: JSON.stringify({ password: PASSWORD, type, ...data })
           });
           const json = await res.json();
-          if (json.status === "ok") {
-            setStatus("✅ Uploaded to Google Sheet");
-          } else {
-            setStatus("⚠️ Upload failed: " + (json.message || ""));
-          }
+          if (json.status === "ok") setStatus("✅ Uploaded to Google Sheet");
+          else setStatus("⚠️ Upload failed: " + (json.message || ""));
         } catch (err) {
           console.error(err);
           setStatus("❌ Error connecting to Google Sheet");
         }
       }
 
-      // Fetch function
       async function fetchData(sheet) {
         setStatus("Fetching data...");
         try {
-          const res = await fetch(`${SHEET_ENDPOINT}/fetch/${sheet}`);
+          const res = await fetch(`${SHEET_ENDPOINT}/fetch/${sheet}?password=${PASSWORD}`);
           const json = await res.json();
           if (json.status === "ok") {
             setFetchedData(json.data);
