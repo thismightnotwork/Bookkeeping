@@ -9,34 +9,38 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex justify-center p-6">
-  <div id="root" class="w-full max-w-3xl"></div>
+  <div id="root" class="w-full max-w-4xl"></div>
 
   <script type="text/babel">
     const { useState } = React;
 
     function App() {
-      const SHEET_ENDPOINT = "https://work-ftdl.onrender.com/upload";
+      // Replace with your deployed Render relay URL
+      const SHEET_ENDPOINT = "https://work-ftdl.onrender.com";
+
       const [activeTab, setActiveTab] = useState("income");
       const [status, setStatus] = useState("");
+      const [fetchedData, setFetchedData] = useState([]);
 
-      // form states
+      // Form states
       const [income, setIncome] = useState({ source: "", amount: "" });
       const [work, setWork] = useState({ workplace: "", hours: "", rate: "" });
       const [expense, setExpense] = useState({ category: "", amount: "", note: "" });
 
+      // Upload function
       async function upload(type, data) {
         setStatus("Uploading...");
         try {
-          const res = await fetch(SHEET_ENDPOINT, {
+          const res = await fetch(`${SHEET_ENDPOINT}/upload`, {
             method: "POST",
-            body: JSON.stringify({ type, ...data }),
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type, ...data })
           });
           const json = await res.json();
           if (json.status === "ok") {
             setStatus("✅ Uploaded to Google Sheet");
           } else {
-            setStatus("⚠️ Upload failed");
+            setStatus("⚠️ Upload failed: " + (json.message || ""));
           }
         } catch (err) {
           console.error(err);
@@ -44,10 +48,28 @@
         }
       }
 
+      // Fetch function
+      async function fetchData(sheet) {
+        setStatus("Fetching data...");
+        try {
+          const res = await fetch(`${SHEET_ENDPOINT}/fetch/${sheet}`);
+          const json = await res.json();
+          if (json.status === "ok") {
+            setFetchedData(json.data);
+            setStatus("✅ Data fetched");
+          } else {
+            setStatus("⚠️ Fetch failed: " + (json.message || ""));
+          }
+        } catch (err) {
+          console.error(err);
+          setStatus("❌ Error fetching data");
+        }
+      }
+
       function TabButton({ label, id }) {
         return (
           <button
-            onClick={() => setActiveTab(id)}
+            onClick={() => { setActiveTab(id); setFetchedData([]); }}
             className={`px-4 py-2 rounded-t-lg ${
               activeTab === id ? "bg-white text-blue-600 border-t border-l border-r" : "bg-gray-200 text-gray-600"
             }`}
@@ -58,7 +80,7 @@
       }
 
       return (
-        <div className="bg-white rounded-xl shadow-lg w-full">
+        <div className="bg-white rounded-xl shadow-lg w-full p-6">
           {/* Tabs */}
           <div className="flex border-b">
             <TabButton label="Income" id="income" />
@@ -66,7 +88,7 @@
             <TabButton label="Expenses" id="expenses" />
           </div>
 
-          <div className="p-6">
+          <div className="mt-4">
             {activeTab === "income" && (
               <div>
                 <h2 className="text-xl font-bold mb-4">Log Income</h2>
@@ -154,6 +176,39 @@
                 </button>
               </div>
             )}
+
+            {/* View Data */}
+            <div className="mt-6">
+              <button
+                onClick={() => fetchData(activeTab.charAt(0).toUpperCase() + activeTab.slice(1))}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg mb-3"
+              >
+                View {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+              </button>
+
+              {fetchedData.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="table-auto border-collapse border border-gray-300 w-full">
+                    <thead>
+                      <tr>
+                        {Object.keys(fetchedData[0]).map((h,i)=>(
+                          <th key={i} className="border px-2 py-1 bg-gray-200">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fetchedData.map((row,i)=>(
+                        <tr key={i}>
+                          {Object.values(row).map((v,j)=>(
+                            <td key={j} className="border px-2 py-1">{v}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
 
             {/* Status */}
             <div className="mt-4 text-gray-600">{status}</div>
