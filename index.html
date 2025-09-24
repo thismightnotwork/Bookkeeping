@@ -15,17 +15,19 @@
     const { useState } = React;
 
     function App() {
-      // This should point to your Render relay URL
+      // Replace with your deployed Render relay URL
       const SHEET_ENDPOINT = "https://work-ftdl.onrender.com";
 
       const [activeTab, setActiveTab] = useState("income");
       const [status, setStatus] = useState("");
       const [fetchedData, setFetchedData] = useState([]);
 
+      // Form states
       const [income, setIncome] = useState({ source: "", amount: "" });
       const [work, setWork] = useState({ workplace: "", hours: "", rate: "" });
       const [expense, setExpense] = useState({ category: "", amount: "", note: "" });
 
+      // Upload function
       async function upload(type, data) {
         setStatus("Uploading...");
         try {
@@ -35,14 +37,18 @@
             body: JSON.stringify({ type, ...data })
           });
           const json = await res.json();
-          if (json.status === "ok") setStatus("✅ Uploaded to Google Sheet");
-          else setStatus("⚠️ Upload failed: " + (json.message || ""));
+          if (json.status === "ok") {
+            setStatus("✅ Uploaded to Google Sheet");
+          } else {
+            setStatus("⚠️ Upload failed: " + (json.message || ""));
+          }
         } catch (err) {
           console.error(err);
           setStatus("❌ Error connecting to Google Sheet");
         }
       }
 
+      // Fetch function
       async function fetchData(sheet) {
         setStatus("Fetching data...");
         try {
@@ -75,6 +81,7 @@
 
       return (
         <div className="bg-white rounded-xl shadow-lg w-full p-6">
+          {/* Tabs */}
           <div className="flex border-b">
             <TabButton label="Income" id="income" />
             <TabButton label="Work" id="work" />
@@ -87,7 +94,7 @@
                 <h2 className="text-xl font-bold mb-4">Log Income</h2>
                 <input
                   className="border p-2 rounded w-full mb-3"
-                  placeholder="Source"
+                  placeholder="Source (e.g. Lessons)"
                   value={income.source}
                   onChange={e => setIncome({...income, source: e.target.value})}
                 />
@@ -144,7 +151,7 @@
                 <h2 className="text-xl font-bold mb-4">Log Expense</h2>
                 <input
                   className="border p-2 rounded w-full mb-3"
-                  placeholder="Category"
+                  placeholder="Category (e.g. Travel)"
                   value={expense.category}
                   onChange={e => setExpense({...expense, category: e.target.value})}
                 />
@@ -203,6 +210,7 @@
               )}
             </div>
 
+            {/* Status */}
             <div className="mt-4 text-gray-600">{status}</div>
           </div>
         </div>
