@@ -48,8 +48,7 @@ Open Extensions → Apps Script in your Google Sheet.
 
 Replace the default Code.gs with:
 
-javascript
-Copy code
+```javascript
 function doGet(e) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -102,8 +101,7 @@ Who has access: Anyone
 Copy the /exec URL — this is your Apps Script endpoint.
 
 4️⃣ Optional: Deploy Relay Server
-js
-Copy code
+```js
 import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
@@ -138,8 +136,7 @@ Open index.html.
 
 Update the SHEET_ENDPOINT variable:
 
-js
-Copy code
+```js
 const SHEET_ENDPOINT = "YOUR_RELAY_URL_OR_APPS_SCRIPT_URL";
 Place logo.png in the root folder for favicon and PWA icon.
 
@@ -153,8 +150,7 @@ Use the tabs to Upload or View data.
 Click Install Bookkeeping to install the PWA (optional).
 
 7️⃣ Deploy to GitHub Pages
-bash
-Copy code
+```bash
 # Make sure you are in the repository root
 git add .
 git commit -m "Initial commit"
