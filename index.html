@@ -15,7 +15,7 @@
 const { useState } = React;
 
 function App() {
-  const SHEET_ENDPOINT = "https://work-ftdl.onrender.com"; // your Render relay
+  const SHEET_ENDPOINT = "https://work-ftdl.onrender.com"; // Render relay
 
   const [activeTab,setActiveTab] = useState("income");
   const [status,setStatus] = useState("");
@@ -25,57 +25,47 @@ function App() {
   const [work,setWork] = useState({ workplace:"", hours:"", rate:"", total:"" });
   const [expense,setExpense] = useState({ category:"", amount:"", note:"" });
 
-  // Upload function
   async function upload(type, data) {
     setStatus("Uploading...");
-
-    // Add today's date if missing
     const today = new Date().toISOString().split("T")[0];
     if (!data.date) data.date = today;
-
-    const sheetType = type.charAt(0).toUpperCase() + type.slice(1);
+    const sheetType = type.charAt(0).toUpperCase()+type.slice(1);
 
     try {
       const res = await fetch(`${SHEET_ENDPOINT}/upload`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({ type: sheetType, ...data })
       });
       const json = await res.json();
-      if (json.status === "ok") {
+      if(json.status==="ok"){
         setStatus("✅ Uploaded to Google Sheet");
-        // Clear form
-        if (type==="income") setIncome({ source:"", amount:"" });
-        if (type==="work") setWork({ workplace:"", hours:"", rate:"", total:"" });
-        if (type==="expenses") setExpense({ category:"", amount:"", note:"" });
-      } else {
-        setStatus("⚠️ Upload failed: "+(json.message||""));
-      }
-    } catch(err) {
+        if(type==="income") setIncome({ source:"", amount:"" });
+        if(type==="work") setWork({ workplace:"", hours:"", rate:"", total:"" });
+        if(type==="expenses") setExpense({ category:"", amount:"", note:"" });
+      } else setStatus("⚠️ Upload failed: "+(json.message||""));
+    } catch(err){
       console.error(err);
       setStatus("❌ Error connecting to Google Sheet");
     }
   }
 
-  // Fetch function
-  async function fetchData(sheet) {
+  async function fetchData(sheet){
     setStatus("Fetching data...");
     try {
       const res = await fetch(`${SHEET_ENDPOINT}/fetch/${sheet}`);
       const json = await res.json();
-      if (json.status==="ok") {
+      if(json.status==="ok"){
         setFetchedData(json.data);
         setStatus("✅ Data fetched");
-      } else {
-        setStatus("⚠️ Fetch failed: "+(json.message||""));
-      }
-    } catch(err) {
+      } else setStatus("⚠️ Fetch failed: "+(json.message||""));
+    } catch(err){
       console.error(err);
       setStatus("❌ Error fetching data");
     }
   }
 
-  function TabButton({label,id}) {
+  function TabButton({label,id}){
     return (
       <button onClick={()=>{setActiveTab(id); setFetchedData([])}}
         className={`px-4 py-2 rounded-t-lg ${activeTab===id?"bg-white text-blue-600 border-t border-l border-r":"bg-gray-200 text-gray-600"}`}>
@@ -86,7 +76,6 @@ function App() {
 
   return (
     <div className="bg-white rounded-xl shadow-lg w-full p-6">
-      {/* Tabs */}
       <div className="flex border-b">
         <TabButton label="Income" id="income"/>
         <TabButton label="Work" id="work"/>
@@ -94,7 +83,6 @@ function App() {
       </div>
 
       <div className="mt-4">
-        {/* Income */}
         {activeTab==="income" && (
           <div>
             <input className="border p-2 rounded w-full mb-3" placeholder="Source of income" value={income.source} onChange={e=>setIncome({...income, source:e.target.value})}/>
@@ -103,7 +91,6 @@ function App() {
           </div>
         )}
 
-        {/* Work */}
         {activeTab==="work" && (
           <div>
             <input className="border p-2 rounded w-full mb-3" placeholder="Workplace" value={work.workplace} onChange={e=>setWork({...work, workplace:e.target.value})}/>
@@ -113,7 +100,6 @@ function App() {
           </div>
         )}
 
-        {/* Expenses */}
         {activeTab==="expenses" && (
           <div>
             <input className="border p-2 rounded w-full mb-3" placeholder="Category" value={expense.category} onChange={e=>setExpense({...expense, category:e.target.value})}/>
@@ -123,15 +109,12 @@ function App() {
           </div>
         )}
 
-        {/* Fetch data */}
         <div className="mt-6">
           <button onClick={()=>fetchData(activeTab.charAt(0).toUpperCase()+activeTab.slice(1))} className="bg-green-600 text-white px-4 py-2 rounded-lg mb-3">View {activeTab}</button>
           {fetchedData.length>0 && (
             <div className="overflow-x-auto">
               <table className="table-auto border-collapse border border-gray-300 w-full">
-                <thead>
-                  <tr>{Object.keys(fetchedData[0]).map((h,i)=><th key={i} className="border px-2 py-1 bg-gray-200">{h}</th>)}</tr>
-                </thead>
+                <thead><tr>{Object.keys(fetchedData[0]).map((h,i)=><th key={i} className="border px-2 py-1 bg-gray-200">{h}</th>)}</tr></thead>
                 <tbody>{fetchedData.map((row,i)=><tr key={i}>{Object.values(row).map((v,j)=><td key={j} className="border px-2 py-1">{v}</td>)}</tr>)}</tbody>
               </table>
             </div>
