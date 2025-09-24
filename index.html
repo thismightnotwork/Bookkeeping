@@ -15,51 +15,69 @@
 const { useState } = React;
 
 function App() {
-  const SHEET_ENDPOINT = "https://work-ftdl.onrender.com"; // Render relay
+  const SHEET_ENDPOINT = "https://work-ftdl.onrender.com"; // your Render relay
 
   const [activeTab,setActiveTab] = useState("income");
   const [status,setStatus] = useState("");
   const [fetchedData,setFetchedData] = useState([]);
 
   const [income,setIncome] = useState({ source:"", amount:"" });
-  const [work,setWork] = useState({ workplace:"", hours:"", rate:"" });
+  const [work,setWork] = useState({ workplace:"", hours:"", rate:"", total:"" });
   const [expense,setExpense] = useState({ category:"", amount:"", note:"" });
 
-  async function upload(type,data){
+  // Upload function
+  async function upload(type, data) {
     setStatus("Uploading...");
-    try{
+
+    // Add today's date if missing
+    const today = new Date().toISOString().split("T")[0];
+    if (!data.date) data.date = today;
+
+    const sheetType = type.charAt(0).toUpperCase() + type.slice(1);
+
+    try {
       const res = await fetch(`${SHEET_ENDPOINT}/upload`, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ type:type.charAt(0).toUpperCase() + type.slice(1), ...data })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: sheetType, ...data })
       });
       const json = await res.json();
-      if(json.status==="ok") setStatus("✅ Uploaded to Google Sheet");
-      else setStatus("⚠️ Upload failed: "+(json.message||""));
-    }catch(err){
+      if (json.status === "ok") {
+        setStatus("✅ Uploaded to Google Sheet");
+        // Clear form
+        if (type==="income") setIncome({ source:"", amount:"" });
+        if (type==="work") setWork({ workplace:"", hours:"", rate:"", total:"" });
+        if (type==="expenses") setExpense({ category:"", amount:"", note:"" });
+      } else {
+        setStatus("⚠️ Upload failed: "+(json.message||""));
+      }
+    } catch(err) {
       console.error(err);
       setStatus("❌ Error connecting to Google Sheet");
     }
   }
 
-  async function fetchData(sheet){
+  // Fetch function
+  async function fetchData(sheet) {
     setStatus("Fetching data...");
-    try{
+    try {
       const res = await fetch(`${SHEET_ENDPOINT}/fetch/${sheet}`);
       const json = await res.json();
-      if(json.status==="ok"){
+      if (json.status==="ok") {
         setFetchedData(json.data);
         setStatus("✅ Data fetched");
-      }else setStatus("⚠️ Fetch failed: "+(json.message||""));
-    }catch(err){
+      } else {
+        setStatus("⚠️ Fetch failed: "+(json.message||""));
+      }
+    } catch(err) {
       console.error(err);
       setStatus("❌ Error fetching data");
     }
   }
 
-  function TabButton({label,id}){
-    return(
-      <button onClick={()=>{setActiveTab(id); setFetchedData([])}} 
+  function TabButton({label,id}) {
+    return (
+      <button onClick={()=>{setActiveTab(id); setFetchedData([])}}
         className={`px-4 py-2 rounded-t-lg ${activeTab===id?"bg-white text-blue-600 border-t border-l border-r":"bg-gray-200 text-gray-600"}`}>
         {label}
       </button>
@@ -68,6 +86,7 @@ function App() {
 
   return (
     <div className="bg-white rounded-xl shadow-lg w-full p-6">
+      {/* Tabs */}
       <div className="flex border-b">
         <TabButton label="Income" id="income"/>
         <TabButton label="Work" id="work"/>
@@ -75,30 +94,36 @@ function App() {
       </div>
 
       <div className="mt-4">
+        {/* Income */}
         {activeTab==="income" && (
           <div>
-            <input className="border p-2 rounded w-full mb-3" placeholder="Source" value={income.source} onChange={e=>setIncome({...income, source:e.target.value})}/>
+            <input className="border p-2 rounded w-full mb-3" placeholder="Source of income" value={income.source} onChange={e=>setIncome({...income, source:e.target.value})}/>
             <input className="border p-2 rounded w-full mb-3" placeholder="Amount (£)" type="number" value={income.amount} onChange={e=>setIncome({...income, amount:e.target.value})}/>
-            <button onClick={()=>upload("income",income)} className="bg-blue-600 text-white px-4 py-2 rounded-lg">Upload</button>
+            <button onClick={()=>upload("income", income)} className="bg-blue-600 text-white px-4 py-2 rounded-lg">Upload</button>
           </div>
         )}
+
+        {/* Work */}
         {activeTab==="work" && (
           <div>
             <input className="border p-2 rounded w-full mb-3" placeholder="Workplace" value={work.workplace} onChange={e=>setWork({...work, workplace:e.target.value})}/>
-            <input className="border p-2 rounded w-full mb-3" placeholder="Hours Worked" type="number" value={work.hours} onChange={e=>setWork({...work, hours:e.target.value})}/>
-            <input className="border p-2 rounded w-full mb-3" placeholder="Rate per Hour (£)" type="number" value={work.rate} onChange={e=>setWork({...work, rate:e.target.value})}/>
-            <button onClick={()=>upload("work",{...work,total:work.hours*work.rate})} className="bg-blue-600 text-white px-4 py-2 rounded-lg">Upload</button>
+            <input className="border p-2 rounded w-full mb-3" placeholder="Hours worked" type="number" value={work.hours} onChange={e=>setWork({...work, hours:e.target.value})}/>
+            <input className="border p-2 rounded w-full mb-3" placeholder="Rate (£)" type="number" value={work.rate} onChange={e=>setWork({...work, rate:e.target.value})}/>
+            <button onClick={()=>upload("work",{...work, total: work.hours*work.rate})} className="bg-blue-600 text-white px-4 py-2 rounded-lg">Upload</button>
           </div>
         )}
+
+        {/* Expenses */}
         {activeTab==="expenses" && (
           <div>
             <input className="border p-2 rounded w-full mb-3" placeholder="Category" value={expense.category} onChange={e=>setExpense({...expense, category:e.target.value})}/>
             <input className="border p-2 rounded w-full mb-3" placeholder="Amount (£)" type="number" value={expense.amount} onChange={e=>setExpense({...expense, amount:e.target.value})}/>
-            <input className="border p-2 rounded w-full mb-3" placeholder="Note" value={expense.note} onChange={e=>setExpense({...expense, note:e.target.value})}/>
-            <button onClick={()=>upload("expense",expense)} className="bg-blue-600 text-white px-4 py-2 rounded-lg">Upload</button>
+            <input className="border p-2 rounded w-full mb-3" placeholder="Notes" value={expense.note} onChange={e=>setExpense({...expense, note:e.target.value})}/>
+            <button onClick={()=>upload("expenses",expense)} className="bg-blue-600 text-white px-4 py-2 rounded-lg">Upload</button>
           </div>
         )}
 
+        {/* Fetch data */}
         <div className="mt-6">
           <button onClick={()=>fetchData(activeTab.charAt(0).toUpperCase()+activeTab.slice(1))} className="bg-green-600 text-white px-4 py-2 rounded-lg mb-3">View {activeTab}</button>
           {fetchedData.length>0 && (
