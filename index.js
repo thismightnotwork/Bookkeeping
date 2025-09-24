@@ -4,27 +4,34 @@ import cors from "cors";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const SHEET_ENDPOINT = "https://script.google.com/macros/s/YOUR_APPS_SCRIPT_EXEC_URL/exec";
+const PASSWORD = "mypassword123"; // set your password here
 
-// Replace this with your deployed Google Apps Script /exec URL
-const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbyEFQiAP1lK1tlZeqDDc6LIT0J4ujeIVW6hIcrdj7hYgr_H3Ix-KPUX6eZRoQi-fQ9h1g/exec";
-
-// Middleware
 app.use(cors());
 app.use(express.json());
 
+// Middleware to check password
+function checkPassword(req, res, next) {
+  const pass = req.body.password || req.query.password; // POST or GET
+  if (pass !== PASSWORD) {
+    return res.status(401).json({ status: "error", message: "Invalid password" });
+  }
+  next();
+}
+
 // POST /upload → send form data to Google Sheet
-app.post("/upload", async (req, res) => {
+app.post("/upload", checkPassword, async (req, res) => {
   console.log("Received upload:", req.body);
+  const { password, ...data } = req.body; // remove password before sending
   try {
     const response = await fetch(SHEET_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body)
+      body: JSON.stringify(data)
     });
 
-    const data = await response.json();
-    console.log("Apps Script response:", data);
-    res.json(data);
+    const json = await response.json();
+    res.json(json);
   } catch (err) {
     console.error("Error forwarding to Google Sheet:", err);
     res.status(500).json({ status: "error", message: err.message });
@@ -32,7 +39,7 @@ app.post("/upload", async (req, res) => {
 });
 
 // GET /fetch/:sheet → fetch all rows from a specific tab
-app.get("/fetch/:sheet", async (req, res) => {
+app.get("/fetch/:sheet", checkPassword, async (req, res) => {
   const sheet = req.params.sheet; // Income / Work / Expenses
   console.log("Fetching sheet:", sheet);
 
@@ -48,7 +55,7 @@ app.get("/fetch/:sheet", async (req, res) => {
 
 // Optional: GET / → simple status message
 app.get("/", (req, res) => {
-  res.send("SlopeLedger Relay Server is running. Use POST /upload and GET /fetch/:sheet");
+  res.send("SlopeLedger Relay Server is running. Use password to POST /upload and GET /fetch/:sheet");
 });
 
 // Start server
