@@ -5,7 +5,7 @@ import cors from "cors";
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SHEET_ENDPOINT = "https://script.google.com/macros/s/YOUR_APPS_SCRIPT_EXEC_URL/exec";
-const PASSWORD = "mypassword123"; // set your password here
+const PASSWORD = "Welcome200827"; // set your password here
 
 app.use(cors());
 app.use(express.json());
