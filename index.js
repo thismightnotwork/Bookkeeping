@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Apps Script URL
-const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbywYa-EWs03JRuj62wVPoLTRppfRUksvaB0rmv9huhKt_o9Aifx2G1YDwONLiWInbq3_w/exec";
+const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbzA6XnGuFX_ryiT3bt313wj_n2aPrDrS2jx59_dO1G_Df9eK7-tDxe3j-F-jczv_HdOgA/exec";
 
 app.use(cors());
 app.use(express.json());
