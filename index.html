@@ -17,7 +17,6 @@
     function App() {
       // Replace with your Render relay URL
       const SHEET_ENDPOINT = "https://work-ftdl.onrender.com";
-      const PASSWORD = "Welcome200827"; // same as your relay server
 
       const [activeTab, setActiveTab] = useState("income");
       const [status, setStatus] = useState("");
@@ -27,13 +26,14 @@
       const [work, setWork] = useState({ workplace: "", hours: "", rate: "" });
       const [expense, setExpense] = useState({ category: "", amount: "", note: "" });
 
+      // Upload function
       async function upload(type, data) {
         setStatus("Uploading...");
         try {
           const res = await fetch(`${SHEET_ENDPOINT}/upload`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ password: PASSWORD, type, ...data })
+            body: JSON.stringify({ type, ...data })
           });
           const json = await res.json();
           if (json.status === "ok") setStatus("✅ Uploaded to Google Sheet");
@@ -44,10 +44,11 @@
         }
       }
 
+      // Fetch function
       async function fetchData(sheet) {
         setStatus("Fetching data...");
         try {
-          const res = await fetch(`${SHEET_ENDPOINT}/fetch/${sheet}?password=${PASSWORD}`);
+          const res = await fetch(`${SHEET_ENDPOINT}/fetch/${sheet}`);
           const json = await res.json();
           if (json.status === "ok") {
             setFetchedData(json.data);
